@@ -24,11 +24,11 @@ public class MyJPanel extends JPanel implements MouseListener, MouseMotionListen
 			if(m_fuzzyPoints.size() == 2){
 
 				Vote a = Vote.create(m_fuzzyPoints.get(0), m_fuzzyPoints.get(1));
-				b = a.getSymmetricAxis();
-				Axis c = Vote.getMostSymmetricAxis(b);
+				b = a.getSymmetricBin();
+				Bin c = Vote.getMostSymmetricBin(b);
 
-				System.out.println("distance:"+c.getDistance()+", degree:"+Math.toDegrees(c.getDegree()));
-				System.out.println("the number of axis:"+b.size());
+				//System.out.println("distance:"+c.getDistance()+", degree:"+Math.toDegrees(c.getDegree()));
+				System.out.println("the number of bin:"+b.size());
 
 				repaint();
 
@@ -104,17 +104,22 @@ public class MyJPanel extends JPanel implements MouseListener, MouseMotionListen
 		g.drawOval((int)_previousPoint.getX()-(int)radius, (int)_previousPoint.getY()-(int)radius, (int)radius*2, (int)radius*2);
 	}
 
-	public void drawAxis(Axis _axis, Color _color, Graphics g){
+	public void drawAxis(Bin _bin, Color _color, Graphics g){
 		double x1,x2;
-		x1 = _axis.getDistance()/Math.cos(_axis.getDegree());
-		x2 = _axis.getDistance()/Math.cos(_axis.getDegree()) - Math.tan(_axis.getDegree())*CANVAS_SIZE_Y;
 
-		g.setColor(_color);
+		for(double i = _bin.getBeginTheta(); i < _bin.getEndTheta(); i += 0.1) {
+			for (double j = _bin.getBeginRho(); j < _bin.getEndRho(); j++) {
+				x1 = (j * Vote.R / Vote.NUM_OF_DIVISION_RHO) / Math.cos(i * 2 * Math.PI / Vote.NUM_OF_DIVISION_THETA);
+				x2 = (j * Vote.R / Vote.NUM_OF_DIVISION_RHO) / Math.cos(i * 2 * Math.PI / Vote.NUM_OF_DIVISION_THETA) - Math.tan(i * 2 * Math.PI / Vote.NUM_OF_DIVISION_THETA) * CANVAS_SIZE_Y;
 
-		g.drawLine((int)x1,0,(int)x2,CANVAS_SIZE_Y);
+				g.setColor(_color);
+				g.drawLine((int)x1,0,(int)x2,CANVAS_SIZE_Y);
+			}
+		}
+
 	}
 
-	List<Axis> b;
+	List<Bin> b;
 	private int m_counter = 0;
 	private final List<Point> m_points = new ArrayList<>();
 	private final List<FuzzyPoint> m_fuzzyPoints = new ArrayList<>();
@@ -136,19 +141,17 @@ public class MyJPanel extends JPanel implements MouseListener, MouseMotionListen
 		}
 
 		if(b != null) {
-			for (Axis value : b) {
+			for (Bin value : b) {
 				Color green = new Color(Color.GREEN.getRed(), Color.GREEN.getGreen(), Color.GREEN.getBlue(), (int) (value.getGrade() * 30));
 				drawAxis(value, green, g);
-			}
-			Axis axis = Vote.getMostSymmetricAxis(b);
-			drawAxis(axis,Color.RED,g);
 
+			}
+
+			Bin bin = Vote.getMostSymmetricBin(b);
+			drawAxis(bin,Color.RED,g);
 
 		}
 
 	}
-
-
-
 
 }
